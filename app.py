@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.metrics import accuracy_score, mean_squared_error
 
 # Title
 st.title("AI-Powered Drug Repurposing for NTDs")
@@ -20,16 +20,26 @@ if uploaded_file is not None:
     X = data.drop(columns=[target_col])
     y = data[target_col]
 
-    # Train/test split
+    # Detect if target is classification or regression
+    if y.nunique() < 20 and y.dtype in [np.int64, np.int32, np.object_]:
+        task = "classification"
+    else:
+        task = "regression"
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Retrain model every time (fixes pickle version issue)
-    model = DecisionTreeClassifier()
-    model.fit(X_train, y_train)
-
-    y_pred = model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    st.write(f"Model Accuracy: {acc:.2f}")
+    if task == "classification":
+        model = DecisionTreeClassifier()
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        acc = accuracy_score(y_test, y_pred)
+        st.write(f"**Classification Accuracy:** {acc:.2f}")
+    else:
+        model = DecisionTreeRegressor()
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        mse = mean_squared_error(y_test, y_pred)
+        st.write(f"**Regression MSE:** {mse:.2f}")
 
     # User input for prediction
     st.subheader("Try prediction")
@@ -40,4 +50,4 @@ if uploaded_file is not None:
 
     if st.button("Predict"):
         pred = model.predict([user_input])
-        st.success(f"Predicted class: {pred[0]}")
+        st.success(f"Predicted value: {pred[0]}")
