@@ -1,32 +1,43 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
 
-# Load trained model
-model = joblib.load("model_ntd.joblib")
+# Title
+st.title("AI-Powered Drug Repurposing for NTDs")
 
-st.title("AI-Powered Drug Repurposing for Neglected Tropical Diseases (NTDs)")
-st.write("Upload data or input features manually to predict potential drug repurposing outcomes.")
-
-# Option to upload CSV
-uploaded_file = st.file_uploader("Upload CSV file with features", type=["csv"])
+# File uploader
+uploaded_file = st.file_uploader("Upload CSV (with features + target column)", type="csv")
 
 if uploaded_file is not None:
     data = pd.read_csv(uploaded_file)
-    st.write("Uploaded Data Preview:")
-    st.dataframe(data.head())
-    preds = model.predict(data)
-    st.write("Predictions:")
-    st.write(preds)
-else:
-    st.write("Or enter feature values manually:")
-    input_data = []
-    cols = [f"Feature_{i}" for i in range(1, 11)]
-    for col in cols:
-        val = st.number_input(f"Enter {col}", value=0.0)
-        input_data.append(val)
+    st.write("Data preview:", data.head())
+
+    target_col = st.selectbox("Select target column", data.columns)
+
+    X = data.drop(columns=[target_col])
+    y = data[target_col]
+
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Retrain model every time (fixes pickle version issue)
+    model = DecisionTreeClassifier()
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+    st.write(f"Model Accuracy: {acc:.2f}")
+
+    # User input for prediction
+    st.subheader("Try prediction")
+    user_input = []
+    for col in X.columns:
+        val = st.number_input(f"Enter {col}", value=float(X[col].mean()))
+        user_input.append(val)
+
     if st.button("Predict"):
-        data = np.array(input_data).reshape(1, -1)
-        pred = model.predict(data)
-        st.write(f"Prediction: {pred[0]}")
+        pred = model.predict([user_input])
+        st.success(f"Predicted class: {pred[0]}")
