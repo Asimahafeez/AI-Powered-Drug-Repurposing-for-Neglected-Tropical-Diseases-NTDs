@@ -1,6 +1,3 @@
-ठीक है 👍 मैंने तुम्हारे प्रोजेक्ट के लिए simple और professional README बना दिया है — बिना extra buzzwords, सिर्फ साफ explanation:
-
----
 
 # AI-Powered Drug Repurposing for Neglected Tropical Diseases (NTDs)
 
@@ -37,7 +34,7 @@ Start the Streamlit app:
 ```bash
 streamlit run app.py
 ```
-
+Live Demo: https://ai-powered-drug-repurposing-for-neglected-tropical-diseases-nt.streamlit.app/
 ## Usage
 
 1. Run the app locally or deploy on Streamlit Cloud
@@ -47,3 +44,4 @@ streamlit run app.py
 ## License
 
 This project is for educational and research purposes.
+
